@@ -72,7 +72,8 @@ public class FlowMain {
             rowIndex = 4;
             colIndex = 0;
             value = getCellValue(file.getName(), sheet, rowIndex, colIndex);
-            ZWLData zwlStartData = datas.get(id + Utils.parseStartTime(value));
+            String startTime = id + Utils.parseStartTime(value);
+            ZWLData zwlStartData = datas.get(startTime);
 
             // -2.21m 开始水位
             rowIndex = 29;
@@ -84,16 +85,19 @@ public class FlowMain {
             rowIndex = 4;
             colIndex = 4;
             value = getCellValue(file.getName(), sheet, rowIndex, colIndex);
-            ZWLData zwlEndData = datas.get(id + Utils.parseEndTime(value));
+            String endTime = id + Utils.parseEndTime(value);
+            ZWLData zwlEndData = datas.get(endTime);
 
             rowIndex = 29;
             colIndex = 4;
             value = getCellValue(file.getName(), sheet, rowIndex, colIndex);
             BigDecimal endFlow = Utils.parseEndFlow(value);
 
-            System.out.printf("%s-> 开始水位: %s, 结束水位: %s, 开始水位（ZWL）: %s, 结束水位（ZWL）: %s, dif: %s %s \n",
+            System.out.printf("%s-> 开始水位（%s）: %s, 结束水位（%s）: %s, 开始水位（ZWL）: %s, 结束水位（ZWL）: %s, dif: %s %s \n",
                     file.getName(),
+                    startTime,
                     startFlow,
+                    endTime,
                     endFlow,
                     zwlStartData == null ? "-" : zwlStartData.value(),
                     zwlEndData == null ? "-" : zwlEndData.value(),
@@ -160,7 +164,13 @@ public class FlowMain {
             BigDecimal step = data.value().subtract(lastData.value())
                     .divide(BigDecimal.valueOf(data.minute() - lastData.minute()),
                             2, RoundingMode.HALF_UP);
-            for (int i = lastData.minute() + 1; i < data.minute(); i++) {
+
+//            for (int i = 0; i < lastData.minute(); i++) {
+//                BigDecimal newValue = lastData.value().subtract(step.multiply(new BigDecimal(lastData.minute() - i)));
+//                ZWLData newData = new ZWLData(data.day(), i, newValue);
+//                datas.put(newData.id(), newData);
+//            }
+            for (int i = lastData.minute() + 1; i < 60; i++) {
                 BigDecimal newValue = lastData.value().add(step.multiply(new BigDecimal(i - lastData.minute())));
                 ZWLData newData = new ZWLData(data.day(), i, newValue);
                 datas.put(newData.id(), newData);
